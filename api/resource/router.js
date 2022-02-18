@@ -1,27 +1,35 @@
 // build your `/api/resources` router here
-const router = require("express").Router();
-const Resource = require("./model");
+const router = require('express').Router()
+const RM = require('./model')
 
-router.get("/", (req, res, next) => {
-  Resource.getAllResources()
-    .then((resource) => {
-      res.status(200).json(resource);
-    })
-    .catch(next);
-});
-router.post("/", (req, res, next) => {
-  Resource.postResource(req.body)
-    .then((resource) => {
-      res.status(201).json(resource);
-    })
-    .catch(next);
-});
+// [GET] /api/resources
+router.get('/', (req, res, next) => {
+    RM.getAllResources()
+      .then(getRes => {
+          res.status(200).json(getRes)
+      })
+      .catch(next)
+})
 
-router.use((err, req, res, next) => {
-  res.status(500).json({
-    customMessage: "something went wrong inside the router",
-    message: err.message,
-  });
-});
+// [POST] /api/resources
+router.post('/', (req, res, next) => {
+    RM.createResources(req.body)
+      .then(addNewRes => {
+          res.status(201).json({
+            status: 201,
+            resource_id: addNewRes.resource_id,
+            resource_name: addNewRes.resource_name,
+            resource_description: addNewRes.resource_description,
+          })
+      })
+      .catch(next)
+})
+
+router.use((err, req, res, next) => { // eslint-disable-line
+    res.status(err.status || 500).json({
+      message: err.message,
+    })
+})
+
 
 module.exports = router;
