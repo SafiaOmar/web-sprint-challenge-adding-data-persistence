@@ -19,6 +19,7 @@
   "dependencies": {
     "express": "^4.17.3",
     "knex": "^1.0.3",
+    "migrate": "^1.7.0",
     "sqlite3": "^5.0.2"
   }
 }
