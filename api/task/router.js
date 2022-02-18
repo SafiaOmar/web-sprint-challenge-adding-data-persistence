@@ -1,29 +1,28 @@
 // build your `/api/tasks` router here
-const express = require('express')
-const Tasks = require('./model')
-const router = express.Router()
+const router = require("express").Router();
+const Task = require("./model");
 
-router.get('/', (req, res, next) => {
-    Tasks.getAll()
-    .then((task) => {
-        res.status(200).json(task)
+router.get("/", (req, res, next) => {
+  Task.getAllTasks()
+    .then((resource) => {
+      res.status(200).json(resource);
     })
-    .catch(next)
-})
+    .catch(next);
+});
 
-router.post('/', async (req, res, next) => { 
-    try{
-        const newTask = await Tasks.create(req.body)
-        res.status(201).json({
-            task_id: newTask.task_id,
-            task_description: newTask.task_description,
-            task_notes: newTask.task_notes,
-            task_completed: newTask.task_completed === 0 ? false : true,
-            project_id: newTask.project_id
-        })
-    }catch(err){
-        next(err)
-    }
-})
+router.post("/", (req, res, next) => {
+  Task.postTask(req.body)
+    .then((task) => {
+      res.status(201).json(task);
+    })
+    .catch(next);
+});
 
-module.exports = router
+router.use((err, req, res, next) => {
+  res.status(500).json({
+    customMessage: "something went wrong inside the recipes router",
+    message: err.message,
+  });
+});
+
+module.exports = router;

@@ -1,36 +1,47 @@
 // build your `Task` model here
-const db = require('../../data/dbConfig')
+const db = require("../../data/dbConfig");
 
-const getAll = async () => {
-    const tasks = await db('tasks as t')
-    .join('projects as p', 't.project_id', 'p.project_id')
-    .select('t.*', 'p.project_name', 'p.project_description')
-    const results = []
-    for(let i = 0; i < tasks.length; i++){
-        let result = {
-            task_id: tasks[i].task_id,
-            task_description: tasks[i].task_description,
-            task_notes: tasks[i].task_notes,
-            task_completed: tasks[i].task_completed === 0 ? false : true,
-            project_name: tasks[i].project_name,
-            project_description: tasks[i].project_description
-        }
-        results.push(result)
+async function getAllTasks() {
+  const rows = await db("tasks").leftJoin(
+    "projects",
+    "tasks.project_id",
+    "projects.project_id"
+  );
+  const newRow = rows.map((task) => {
+    if (task.task_completed == 0) {
+      return {
+        ...task,
+        task_completed: false,
+      };
+    } else {
+      return {
+        ...task,
+        task_completed: true,
+      };
     }
-    return results
+  });
+
+  return newRow;
 }
 
-const create = async (task) => {
-    const [id] = await db('tasks').insert(task)
-    return db('tasks as t')
-    .join(
-        'projects as p',
-        't.project_id',
-        'p.project_id'
-    )
-    .where('task_id', id)
-    .select('t.*')
-    .first()
+async function postTask(task) {
+  const [row] = await db("tasks").insert(task);
+  const [newRow] = await db("tasks").where("task_id", row);
+
+  if (newRow.task_completed == 0) {
+    return {
+      ...newRow,
+      task_completed: false,
+    };
+  } else {
+    return {
+      ...newRow,
+      task_completed: true,
+    };
+  }
 }
 
-module.exports = {getAll, create}
+module.exports = {
+  getAllTasks,
+  postTask,
+};
